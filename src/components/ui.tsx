@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { AccountMenu } from "./account-menu";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -94,12 +95,15 @@ export function Logo() {
   );
 }
 
-export function Header({ children }: { children?: ReactNode }) {
+export function Header({ children, account = true }: { children?: ReactNode; account?: boolean }) {
   return (
     <header className="no-print sticky top-0 z-30 border-b border-cream-300/80 bg-cream-100/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <Logo />
-        <div className="flex items-center gap-2">{children}</div>
+        <div className="flex items-center gap-2">
+          {children}
+          {account && <AccountMenu />}
+        </div>
       </div>
     </header>
   );

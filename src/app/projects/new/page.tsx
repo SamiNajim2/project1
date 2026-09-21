@@ -9,7 +9,7 @@ export default function NewProjectPage() {
     <>
       <Header />
       <main className="mx-auto max-w-3xl px-4 pt-8 pb-20 sm:px-6">
-        <Link href="/" className="text-sm text-muted hover:text-orange-700">
+        <Link href="/projects" className="text-sm text-muted hover:text-orange-700">
           ← All projects
         </Link>
         <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">New strategy project</h1>

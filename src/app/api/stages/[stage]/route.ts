@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { MissingKeyError, describeError } from "@/lib/server/anthropic";
+import { hasActiveSubscription } from "@/lib/server/billing";
 import { ndjsonResponse } from "@/lib/server/ndjson";
 import { runBusiness, runMarket, runPlan, runResearch, runStrategy, runSummary } from "@/lib/server/stages";
 import type { ResearchPlan, ResearchResult, StrategyOutput } from "@/lib/schemas";
+import { getSessionUser } from "@/lib/supabase/server";
 import { STAGE_IDS, type StageId } from "@/lib/types";
 
 export const maxDuration = 300;
@@ -68,6 +70,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ sta
   }
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: describeError(new MissingKeyError()) }, { status: 500 });
+  }
+
+  // Every analysis spends API credit, so only signed-in subscribers may run one.
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "Your session has ended. Sign in again to run the analysis." }, { status: 401 });
+  if (!(await hasActiveSubscription(user.id))) {
+    return Response.json({ error: "An active Strategy Agent Pro subscription is required. Subscribe on the Billing page." }, { status: 402 });
   }
 
   let body: unknown;

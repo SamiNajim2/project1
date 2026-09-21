@@ -69,7 +69,7 @@ export function ProjectWorkspace({ id, autoRun }: { id: string; autoRun: boolean
       <>
         <Header />
         <main className="mx-auto max-w-3xl px-4 pt-16 sm:px-6">
-          <EmptyState title="Project not found" action={<ButtonLink href="/">Back to projects</ButtonLink>}>
+          <EmptyState title="Project not found" action={<ButtonLink href="/projects">Back to projects</ButtonLink>}>
             Projects are saved in the browser they were created in. This one may have been deleted, or created on another device.
           </EmptyState>
         </main>
@@ -92,7 +92,7 @@ export function ProjectWorkspace({ id, autoRun }: { id: string; autoRun: boolean
     if (!confirm(`Delete “${brief.companyName}”? This cannot be undone.`)) return;
     stop();
     await deleteProject(project.id);
-    router.push("/");
+    router.push("/projects");
   };
 
   return (
@@ -108,7 +108,7 @@ export function ProjectWorkspace({ id, autoRun }: { id: string; autoRun: boolean
       </Header>
 
       <main className="mx-auto max-w-7xl px-4 pt-6 pb-24 sm:px-6">
-        <Link href="/" className="no-print text-sm text-muted hover:text-orange-700">
+        <Link href="/projects" className="no-print text-sm text-muted hover:text-orange-700">
           ← All projects
         </Link>
 

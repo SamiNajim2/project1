@@ -1,8 +1,10 @@
 // Runs the full pipeline against a running Strategy Agent server and writes the finished project.
 //
 // Usage: npm run dev   (in another terminal)
-//        npm run sample:generate [-- --base http://localhost:3000 --out src/data/sample-project.json]
+//        STRATEGY_AGENT_COOKIE='<cookie header>' npm run sample:generate [-- --base http://localhost:3000 --out src/data/sample-project.json]
 //
+// The analysis API requires a signed-in subscriber: sign in in the browser, copy the request's Cookie
+// header from the dev tools, and pass it as STRATEGY_AGENT_COOKIE.
 // The sample brief is read from the existing sample project file, so the output replaces it in place.
 
 import { readFile, writeFile } from "node:fs/promises";
@@ -40,7 +42,7 @@ function bodyFor(stage) {
 async function callStage(stage) {
   const res = await fetch(`${base}/api/stages/${stage}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(process.env.STRATEGY_AGENT_COOKIE ? { Cookie: process.env.STRATEGY_AGENT_COOKIE } : {}) },
     body: JSON.stringify(bodyFor(stage)),
   });
   if (!res.ok) throw new Error(`${stage}: HTTP ${res.status} ${await res.text()}`);
