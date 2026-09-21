@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream-50: #fffdf8;
+  --color-cream-100: #fbf6ec;
+  --color-cream-200: #f4ecdc;
+  --color-cream-300: #e9dcc5;
+  --color-cream-400: #d9c7a8;
+
+  --color-ink: #2a2019;
+  --color-ink-soft: #4a3d31;
+  --color-muted: #7a6a58;
+
+  --color-orange-50: #fff4ea;
+  --color-orange-100: #ffe5cf;
+  --color-orange-200: #fdc9a0;
+  --color-orange-500: #ea6a1c;
+  --color-orange-600: #d45a0f;
+  --color-orange-700: #b0470a;
+
+  --color-sage-100: #e6efe3;
+  --color-sage-700: #3f6b3a;
+  --color-amber-100: #fbefc9;
+  --color-amber-800: #7a5a06;
+  --color-sand-100: #efe6f5;
+  --color-sand-800: #5f3f7a;
+  --color-rose-50: #fdf0ee;
+  --color-rose-100: #fbe0dc;
+  --color-rose-700: #a8321f;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+
+  --shadow-card: 0 1px 2px rgb(42 32 25 / 0.04), 0 4px 16px -6px rgb(42 32 25 / 0.08);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-cream-100);
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background: var(--color-cream-100);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-orange-100);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-orange-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-cream-200) 0%, var(--color-cream-100) 50%, var(--color-cream-200) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body,
+  html {
+    background: white;
+  }
+}
