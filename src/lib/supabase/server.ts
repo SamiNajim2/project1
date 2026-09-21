@@ -30,10 +30,18 @@ export async function getSessionUser(): Promise<User | null> {
 
 let admin: ReturnType<typeof createClient> | null = null;
 
+// Next.js memoizes identical GET fetches within a server render, so a read after a write in the same
+// render would return the pre-write row. A signal opts each request out of memoization.
+const unmemoizedFetch: typeof fetch = (input, init) =>
+  fetch(input, { ...init, cache: "no-store", signal: init?.signal ?? new AbortController().signal });
+
 /** Service client using the secret key. Bypasses RLS: server-only, never expose. */
 export function getSupabaseAdmin() {
   const key = process.env.SUPABASE_SECRET_KEY;
   if (!key) throw new Error("SUPABASE_SECRET_KEY is not set on the server.");
-  admin ??= createClient(SUPABASE_URL, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  admin ??= createClient(SUPABASE_URL, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: unmemoizedFetch },
+  });
   return admin;
 }
