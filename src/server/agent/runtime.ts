@@ -190,7 +190,11 @@ export class MeetingOrchestrator {
 
   /** Bot lifecycle webhook from the Recall dashboard endpoint. */
   async handleBotStatus(event: BotStatusChangeEvent): Promise<void> {
-    const botId = event.data.bot.id;
+    const botId = event.data?.bot?.id;
+    if (!botId) {
+      log.debug("status event without a bot id", { event: event.event });
+      return;
+    }
     const meeting = await this.deps.store.getMeetingByBotId(botId);
     if (!meeting) {
       log.warn("status event for unknown bot", { botId, event: event.event });
