@@ -1,0 +1,179 @@
+{
+  "company": "Northstar Software",
+  "project": {
+    "key": "ATL",
+    "name": "Atlas Launch",
+    "lead": "Priya Raman",
+    "description": "Atlas 2.0 platform launch: billing migration, SSO, onboarding and the public API."
+  },
+  "board": {
+    "sprint": "Sprint 12",
+    "sprint_goal": "Close out the launch blockers for Atlas 2.0 and freeze scope for the 30 September release.",
+    "sprint_start": "2026-09-15",
+    "sprint_end": "2026-09-26",
+    "release_date": "2026-09-30",
+    "statuses": ["Backlog", "To Do", "In Progress", "In Review", "Blocked", "Done"]
+  },
+  "users": [
+    { "accountId": "u-priya", "displayName": "Priya Raman", "email": "priya.raman@northstar.example", "role": "Engineering Manager" },
+    { "accountId": "u-marcus", "displayName": "Marcus Lee", "email": "marcus.lee@northstar.example", "role": "Backend Engineer" },
+    { "accountId": "u-dana", "displayName": "Dana Whitfield", "email": "dana.whitfield@northstar.example", "role": "Frontend Engineer" },
+    { "accountId": "u-sofia", "displayName": "Sofia Alvarez", "email": "sofia.alvarez@northstar.example", "role": "Product Manager" },
+    { "accountId": "u-tom", "displayName": "Tom Becker", "email": "tom.becker@northstar.example", "role": "SRE" },
+    { "accountId": "u-yuki", "displayName": "Yuki Tanaka", "email": "yuki.tanaka@northstar.example", "role": "QA Lead" }
+  ],
+  "issues": [
+    {
+      "key": "ATL-101",
+      "type": "Story",
+      "summary": "Migrate billing service to the new pricing engine",
+      "description": "Move invoicing off the legacy pricing tables and onto the Atlas pricing engine. Includes a dual-write window and a reconciliation job that compares legacy and new invoice totals for 14 days.",
+      "status": "In Progress",
+      "priority": "Highest",
+      "assignee": "Marcus Lee",
+      "reporter": "Sofia Alvarez",
+      "labels": ["launch-blocker", "billing"],
+      "storyPoints": 13,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-25",
+      "created": "2026-08-18T09:12:00Z",
+      "updated": "2026-09-21T16:40:00Z",
+      "comments": [
+        { "author": "Marcus Lee", "body": "Dual-write is live in staging. Reconciliation found 3 mismatches, all rounding on annual plans.", "created": "2026-09-19T11:02:00Z" },
+        { "author": "Sofia Alvarez", "body": "We cannot ship the launch without this. Treating it as the top blocker.", "created": "2026-09-20T08:31:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-102",
+      "type": "Bug",
+      "summary": "SSO login loop for Okta tenants",
+      "description": "Okta-backed tenants bounce between the IdP and the Atlas login page when the SAML assertion carries a nameId of type persistent. Reproduces on the tenant sandbox 'northwind'.",
+      "status": "Blocked",
+      "priority": "Highest",
+      "assignee": "Dana Whitfield",
+      "reporter": "Yuki Tanaka",
+      "labels": ["launch-blocker", "auth", "customer-reported"],
+      "storyPoints": 5,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-24",
+      "created": "2026-09-08T14:45:00Z",
+      "updated": "2026-09-22T07:15:00Z",
+      "comments": [
+        { "author": "Dana Whitfield", "body": "Blocked on Okta support ticket #4471 — waiting for them to confirm the assertion format on their side.", "created": "2026-09-17T10:20:00Z" },
+        { "author": "Yuki Tanaka", "body": "Two enterprise customers hit this during the beta. Reproduction steps are in the ticket description.", "created": "2026-09-18T09:05:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-103",
+      "type": "Task",
+      "summary": "Publish the Atlas public API reference",
+      "description": "Generate the OpenAPI reference from the service schema and publish it to docs.northstar.example/atlas. Includes the authentication guide and three worked examples.",
+      "status": "In Review",
+      "priority": "Medium",
+      "assignee": "Sofia Alvarez",
+      "reporter": "Priya Raman",
+      "labels": ["docs", "api"],
+      "storyPoints": 3,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-23",
+      "created": "2026-09-01T12:00:00Z",
+      "updated": "2026-09-21T13:22:00Z",
+      "comments": [
+        { "author": "Priya Raman", "body": "Reference is generated and the examples read well. Just needs a final pass on the auth guide before we close it.", "created": "2026-09-21T13:22:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-104",
+      "type": "Story",
+      "summary": "Onboarding checklist for first-run workspaces",
+      "description": "Show a five-step checklist the first time an admin opens a new workspace: invite team, connect identity provider, import data, set billing contact, publish first project.",
+      "status": "In Progress",
+      "priority": "High",
+      "assignee": "Dana Whitfield",
+      "reporter": "Sofia Alvarez",
+      "labels": ["onboarding", "growth"],
+      "storyPoints": 8,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-26",
+      "created": "2026-08-29T10:30:00Z",
+      "updated": "2026-09-20T17:05:00Z",
+      "comments": [
+        { "author": "Dana Whitfield", "body": "Four of the five steps are wired up. The billing contact step depends on ATL-101 landing first.", "created": "2026-09-20T17:05:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-105",
+      "type": "Task",
+      "summary": "Load test the API gateway at 5x launch traffic",
+      "description": "Run a sustained 30 minute load test at five times the projected launch peak (12k requests/minute) and record p95 latency, error rate and autoscaling behaviour.",
+      "status": "To Do",
+      "priority": "High",
+      "assignee": "Tom Becker",
+      "reporter": "Priya Raman",
+      "labels": ["launch-blocker", "reliability"],
+      "storyPoints": 5,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-25",
+      "created": "2026-09-05T08:00:00Z",
+      "updated": "2026-09-19T15:10:00Z",
+      "comments": [
+        { "author": "Tom Becker", "body": "Test rig is ready. I need a staging window where billing is not dual-writing so the numbers are clean.", "created": "2026-09-19T15:10:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-106",
+      "type": "Bug",
+      "summary": "Invoice PDF shows the wrong currency for AUD accounts",
+      "description": "Australian accounts render invoice totals with a US dollar symbol even though the amounts are correct in AUD. Affects the PDF only; the web view is correct.",
+      "status": "Done",
+      "priority": "Medium",
+      "assignee": "Marcus Lee",
+      "reporter": "Tom Becker",
+      "labels": ["billing"],
+      "storyPoints": 2,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-18",
+      "created": "2026-09-10T11:20:00Z",
+      "updated": "2026-09-18T09:45:00Z",
+      "comments": [
+        { "author": "Marcus Lee", "body": "Fixed the currency formatter and added a regression test for AUD, EUR and JPY.", "created": "2026-09-18T09:45:00Z" }
+      ]
+    },
+    {
+      "key": "ATL-107",
+      "type": "Story",
+      "summary": "Data import from the legacy Atlas 1.x workspace",
+      "description": "One-click import of projects, members and attachments from Atlas 1.x. Must be resumable and must not duplicate records if the import is retried.",
+      "status": "Backlog",
+      "priority": "Medium",
+      "assignee": null,
+      "reporter": "Sofia Alvarez",
+      "labels": ["migration"],
+      "storyPoints": 8,
+      "sprint": null,
+      "dueDate": null,
+      "created": "2026-09-02T13:40:00Z",
+      "updated": "2026-09-12T09:00:00Z",
+      "comments": []
+    },
+    {
+      "key": "ATL-108",
+      "type": "Task",
+      "summary": "Launch runbook and on-call rotation for release week",
+      "description": "Write the launch day runbook: cutover order, rollback triggers, comms templates, and the on-call rotation covering 29 September to 3 October.",
+      "status": "To Do",
+      "priority": "High",
+      "assignee": "Tom Becker",
+      "reporter": "Priya Raman",
+      "labels": ["reliability", "process"],
+      "storyPoints": 3,
+      "sprint": "Sprint 12",
+      "dueDate": "2026-09-26",
+      "created": "2026-09-11T16:05:00Z",
+      "updated": "2026-09-16T10:15:00Z",
+      "comments": [
+        { "author": "Priya Raman", "body": "Rollback triggers need to name the exact metric thresholds, not 'if it looks bad'.", "created": "2026-09-16T10:15:00Z" }
+      ]
+    }
+  ]
+}
