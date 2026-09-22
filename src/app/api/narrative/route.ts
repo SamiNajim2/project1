@@ -2,6 +2,8 @@ import { z } from "zod";
 import { runAnalysis } from "@/lib/analysis";
 import type { AnalysisInput } from "@/lib/model";
 import { describeError } from "@/lib/server/anthropic";
+import { hasActiveSubscription } from "@/lib/server/billing";
+import { getSessionUser } from "@/lib/supabase/server";
 import { draftNarrative } from "@/lib/server/narrative";
 
 export const maxDuration = 120;
@@ -25,6 +27,13 @@ const Body = z.object({
  */
 export async function POST(request: Request) {
   if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: "ANTHROPIC_API_KEY is not set on the server." }, { status: 500 });
+
+  // Drafting spends API credit, so only signed-in subscribers may use it.
+  const user = await getSessionUser();
+  if (!user) return Response.json({ error: "Your session has ended. Sign in again to draft." }, { status: 401 });
+  if (!(await hasActiveSubscription(user.id))) {
+    return Response.json({ error: "An active Finance Analyst Pro subscription is required. Subscribe on the Billing page." }, { status: 402 });
+  }
   let body: z.infer<typeof Body>;
   try {
     const parsed = Body.safeParse(await request.json());

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
+import { AccountMenu } from "./account-menu";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 
@@ -128,4 +129,26 @@ export function download(filename: string, content: string, type = "text/plain")
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
+}
+
+export function ErrorBanner({ title, message }: { title: string; message: string }) {
+  return (
+    <Banner tone="bad" title={title}>
+      {message}
+    </Banner>
+  );
+}
+
+export function Header({ children, account = true }: { children?: ReactNode; account?: boolean }) {
+  return (
+    <header className="sticky top-0 z-30 border-b border-cream-300/80 bg-cream-100/90 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-[1500px] items-center justify-between gap-4 px-4 sm:px-6">
+        <Logo />
+        <div className="flex items-center gap-2">
+          {children}
+          {account && <AccountMenu />}
+        </div>
+      </div>
+    </header>
+  );
 }

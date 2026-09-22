@@ -1,13 +1,6 @@
-"use client";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { deleteProject, listProjects, newId, putProject } from "@/lib/client/db";
-import { createSampleProject } from "@/lib/client/sample";
-import { periodLabel } from "@/lib/periods";
-import { emptyProject, STEPS, type Project } from "@/lib/project";
-import { Banner, Button, Card, EmptyState, Logo, Pill, Spinner } from "@/components/ui";
+import { ButtonLink, Card, Header } from "@/components/ui";
+import { PLAN, hasActiveSubscription } from "@/lib/server/billing";
+import { getSessionUser } from "@/lib/supabase/server";
 
 const FEATURES = [
   ["Import & map", "Excel and CSV files are read in your browser, kept unchanged, and mapped to a standard finance model."],
@@ -15,90 +8,40 @@ const FEATURES = [
   ["Report", "Variances, three-scenario forecast, runway and MRR bridge, plus an investor update and board-pack section drafted from verified figures only."],
 ] as const;
 
-export default function Home() {
-  const router = useRouter();
-  const [projects, setProjects] = useState<Project[] | null>(null);
-  const [busy, setBusy] = useState<"new" | "sample" | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const INCLUDED = [
+  "Excel and CSV import with column mapping and a data-quality report",
+  "Actual vs budget and prior-period variance, month and year to date",
+  "Base, upside and downside forecasts with cash runway",
+  "MRR bridge with retention and ARR",
+  "AI-drafted investor update and board-pack section from verified figures",
+  "Markdown report and CSV exports after human review",
+];
 
-  const refresh = () =>
-    listProjects()
-      .then(setProjects)
-      .catch((e) => {
-        setProjects([]);
-        setError(e instanceof Error ? e.message : "Browser storage is unavailable");
-      });
-  useEffect(() => {
-    void refresh();
-  }, []);
-
-  const create = async () => {
-    setBusy("new");
-    try {
-      const p = emptyProject(newId());
-      await putProject(p);
-      router.push(`/projects/${p.id}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not create a project");
-      setBusy(null);
-    }
-  };
-  const sample = async () => {
-    setBusy("sample");
-    try {
-      const p = await createSampleProject();
-      router.push(`/projects/${p.id}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not load the sample");
-      setBusy(null);
-    }
-  };
-  const remove = async (p: Project) => {
-    if (!confirm(`Delete “${p.settings.companyName || "Untitled project"}” and its imported data from this browser?`)) return;
-    await deleteProject(p.id);
-    void refresh();
-  };
+export default async function Landing() {
+  const user = await getSessionUser();
+  const subscribed = user ? await hasActiveSubscription(user.id).catch(() => false) : false;
+  const cta = subscribed ? { href: "/projects", label: "Open your projects" } : user ? { href: "/billing", label: `Subscribe for $${PLAN.amount}/month` } : { href: "/signup", label: "Get started" };
 
   return (
     <>
-      <header className="border-b border-cream-300/80 bg-cream-100/90">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Logo />
-          <Button onClick={create} disabled={!!busy}>
-            New project
-          </Button>
-        </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-        <section className="py-12 sm:py-16">
+      <Header />
+      <main className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
+        <section className="py-12 sm:py-20">
           <p className="text-sm font-semibold uppercase tracking-[0.14em] text-orange-600">FP&A workbench</p>
           <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.08] font-semibold tracking-tight text-ink sm:text-5xl">From spreadsheets to a board pack you can trace to the cell.</h1>
-          <p className="mt-4 max-w-2xl text-lg text-ink-soft">Upload actuals, budget, cash and MRR files. Finance Analyst validates them, reconciles totals, and produces variance analysis, forecasts, runway and reporting where every number shows its source.</p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button onClick={sample} disabled={!!busy} className="px-5 py-2.5">
-              {busy === "sample" ? (
-                <>
-                  <Spinner /> Loading sample…
-                </>
-              ) : (
-                "Open the sample project"
-              )}
-            </Button>
-            <Button variant="secondary" onClick={create} disabled={!!busy} className="px-5 py-2.5">
-              Start with your own files
-            </Button>
-          </div>
-          <p className="mt-3 text-xs text-muted">
-            Sample files (fictional company):{" "}
-            {["brightwave_pnl_fy2026.xlsx", "brightwave_cash_2026.csv", "brightwave_mrr_2026.csv", "brightwave_forecast_drivers.xlsx"].map((f, i) => (
-              <span key={f}>
-                {i > 0 && " · "}
-                <a href={`/samples/${f}`} download className="text-orange-700 hover:underline">
-                  {f}
-                </a>
-              </span>
-            ))}
+          <p className="mt-4 max-w-2xl text-lg text-ink-soft">
+            Upload actuals, budget, cash and MRR files. Finance Analyst validates them, reconciles totals, and produces variance analysis, forecasts, runway and reporting where every number shows its source.
           </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <ButtonLink href={cta.href} className="px-6 py-3 text-base">
+              {cta.label}
+            </ButtonLink>
+            {!user && (
+              <ButtonLink href="/login" variant="secondary" className="px-6 py-3 text-base">
+                Sign in
+              </ButtonLink>
+            )}
+          </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {FEATURES.map(([title, text], i) => (
               <div key={title} className="flex gap-3">
@@ -112,58 +55,36 @@ export default function Home() {
           </div>
         </section>
 
-        {error && (
-          <div className="mb-4">
-            <Banner tone="bad" title="Something went wrong">
-              {error}
-            </Banner>
-          </div>
-        )}
-
-        <section aria-labelledby="projects">
-          <div className="mb-4 flex items-end justify-between">
-            <h2 id="projects" className="font-display text-2xl font-semibold text-ink">
-              Projects
-            </h2>
-            <p className="text-xs text-muted">Saved in this browser</p>
-          </div>
-          {projects === null ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="skeleton h-32" />
-              ))}
+        <section id="pricing" aria-labelledby="pricing-heading" className="scroll-mt-24 border-t border-cream-300 pt-14">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div>
+              <h2 id="pricing-heading" className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+                One plan. Everything included.
+              </h2>
+              <p className="mt-3 max-w-md text-ink-soft">Subscribe to analyse your company&apos;s files and produce verified reporting. Billed monthly through Stripe. Cancel anytime from your billing page.</p>
             </div>
-          ) : projects.length === 0 ? (
-            <EmptyState title="No projects yet" action={<Button onClick={sample}>Open the sample project</Button>}>
-              Start from the sample to see the full workflow, or create a project and import your own files.
-            </EmptyState>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((p) => (
-                <Card key={p.id} className="flex flex-col p-5">
-                  <Link href={`/projects/${p.id}`} className="group">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-display text-xl font-semibold text-ink group-hover:text-orange-700">{p.settings.companyName || "Untitled project"}</h3>
-                      <div className="flex gap-1.5">
-                        {p.isSample && <Pill>Sample</Pill>}
-                        {p.review && <Pill tone="good">Reviewed</Pill>}
-                      </div>
-                    </div>
-                    <p className="mt-1 text-sm text-ink-soft">
-                      {periodLabel(p.settings.reportingPeriod)} · {p.settings.currency} · {p.files.length} file{p.files.length === 1 ? "" : "s"}
-                    </p>
-                    <p className="mt-1 text-xs text-muted">Step: {STEPS.find((s) => s.id === p.step)?.label}</p>
-                  </Link>
-                  <div className="mt-auto flex items-center justify-between pt-4 text-xs text-muted">
-                    <span>Updated {new Date(p.updatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
-                    <button onClick={() => remove(p)} className="font-medium text-bad hover:underline">
-                      Delete
-                    </button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+            <Card className="p-7 sm:p-8">
+              <p className="text-sm font-semibold uppercase tracking-wide text-orange-600">{PLAN.name}</p>
+              <p className="mt-3 flex items-baseline gap-1.5">
+                <span className="font-display text-5xl font-semibold text-ink">${PLAN.amount}</span>
+                <span className="text-muted">/ {PLAN.interval}</span>
+              </p>
+              <p className="mt-1 text-sm text-muted">{PLAN.currency}, billed monthly. No free trial.</p>
+              <ul className="mt-6 space-y-2.5 text-sm text-ink-soft">
+                {INCLUDED.map((item) => (
+                  <li key={item} className="flex gap-2.5">
+                    <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-orange-600" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
+                      <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <ButtonLink href={cta.href} className="mt-7 w-full py-3 text-base">
+                {cta.label}
+              </ButtonLink>
+            </Card>
+          </div>
         </section>
       </main>
     </>

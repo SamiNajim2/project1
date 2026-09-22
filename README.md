@@ -13,6 +13,8 @@ It covers the whole workflow:
 8. Draft an investor update and the finance section of a board pack.
 9. Sign off the review, then export.
 
+Access is a paid subscription. People create an account (Supabase Auth), subscribe to **Finance Analyst Pro for $20/month** through Stripe Checkout (no free trial), and manage or cancel it in the Stripe customer portal.
+
 ## What it produces
 
 - Data-quality report: required fields, duplicates, missing values, period gaps, currency mismatches, and reconciliation checks
@@ -42,6 +44,8 @@ It covers the whole workflow:
 
 - Node.js 22.12 or later (Node 24 recommended)
 - An Anthropic API key, used only for narrative drafting
+- A Supabase project, for accounts and the `subscriptions` table
+- A Stripe account. Use sandbox (`sk_test_`) keys while testing.
 
 ## Run locally
 
@@ -49,11 +53,26 @@ It covers the whole workflow:
 git clone git@github.com:SamiNajim2/project1.git
 cd project1
 npm install
-cp .env.example .env.local   # then set ANTHROPIC_API_KEY
+cp .env.example .env.local   # then fill in every value (see below)
 npm run dev
 ```
 
-Open http://localhost:3000 and click **Open the sample project**. The sample loads four fictional files for "Brightwave Analytics" through the normal import path. Walk through the steps in the left sidebar. In step 8, click **Draft with AI**; each draft takes about 30 seconds. In step 9, sign off and export.
+**One-time setup**
+
+1. **Database.** In the Supabase **SQL Editor**, run `supabase/migrations/0001_subscriptions.sql`. It creates one row per user holding their Stripe customer, subscription and status, with Row Level Security: users can read only their own row, and only the server writes.
+2. **Stripe price.** Create the $20/month price in the same Stripe mode as your key, and put the returned `price_...` ID in `STRIPE_PRICE_ID`:
+
+   ```bash
+   curl https://api.stripe.com/v1/products -u "$STRIPE_SECRET_KEY:" -d name="Finance Analyst Pro"
+   curl https://api.stripe.com/v1/prices -u "$STRIPE_SECRET_KEY:" -d product=prod_... \
+     -d unit_amount=2000 -d currency=usd -d "recurring[interval]=month" -d lookup_key=finance_analyst_pro_monthly
+   ```
+
+**Try it**
+
+1. Open http://localhost:3000 and click **Get started** to create an account.
+2. Click **Subscribe for $20/month**. In the Stripe sandbox, pay with card `4242 4242 4242 4242`, any future expiry date and any CVC.
+3. On **Your projects**, click **Open the sample project**. The sample loads four fictional files for "Brightwave Analytics" through the normal import path. Walk through the steps in the left sidebar. In step 8, click **Draft with AI**; each draft takes about 30 seconds. In step 9, sign off and export.
 
 The sample includes two deliberate data-quality problems:
 - February's reported ending MRR is $250 higher than its bridge. The reconciliation check fails and February's MRR figures are marked UNVERIFIED.
@@ -91,11 +110,34 @@ npm run samples:generate  # regenerate public/samples/*
 
 Any other currency than the reporting currency is flagged and never converted.
 
+## Accounts and billing
+
+- **Sign up and sign in** use Supabase Auth with email and password. Accounts are created as already confirmed through `/api/auth/signup`, because Supabase's built-in email service only delivers to project team members. Configure custom SMTP in Supabase before relying on confirmation or password-reset emails.
+- **Paywall.** The public pages are `/` (landing and pricing), `/login` and `/signup`.
+  - `/projects/*` and the AI drafting endpoint require a signed-in user with an active subscription to the `STRIPE_PRICE_ID` price.
+  - Signed-out visitors are sent to sign in (`src/proxy.ts`).
+  - Signed-in users without a subscription are sent to `/billing`.
+  - Subscriptions to other products on the same Stripe account never grant access.
+- **Keeping status in sync.** The Stripe webhook (`/api/stripe/webhook`, signature-verified) handles `checkout.session.completed` and `customer.subscription.*`, and always re-reads the subscription from Stripe. The Checkout return page and the billing page also re-read from Stripe, and the paywall re-checks once a paid period ends, so access stays correct even if a webhook is missed.
+- **Manage or cancel** from the billing page, which opens the Stripe customer portal. A cancellation takes effect at the end of the paid period.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `ANTHROPIC_API_KEY` | Yes | Narrative drafting (server-only) |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Supabase Auth in the browser and server |
+| `SUPABASE_SECRET_KEY` | Yes | Server-only: creates accounts and writes subscription status |
+| `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID` | Yes | Checkout and entitlement |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | No | Customer portal configuration |
+| `STRIPE_WEBHOOK_SECRET` | In production | Webhook signature verification |
+
 ## Deploy to Vercel
 
 1. Import the repository in Vercel (framework preset: Next.js).
-2. Add `ANTHROPIC_API_KEY` under **Settings → Environment Variables**, marked Sensitive.
-3. Deploy. The narrative route (`/api/narrative`) re-runs the deterministic analysis on the server before drafting, and allows up to 120 seconds.
+2. Add the variables above under **Settings → Environment Variables**, and mark the secret ones Sensitive.
+3. Deploy. The narrative route re-runs the deterministic analysis on the server before drafting, and allows up to 120 seconds.
+4. In Stripe, add a webhook endpoint for `https://<your-domain>/api/stripe/webhook` with the events `checkout.session.completed` and `customer.subscription.created/updated/deleted`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+
+If Vercel Deployment Protection is on, it blocks Stripe's webhook calls. Either turn protection off for Production (the app has its own sign-in and paywall), or create a Protection Bypass for Automation and append `?x-vercel-protection-bypass=<secret>` to the webhook URL.
 
 ## How it works
 
@@ -133,7 +175,8 @@ Chart colors were checked with a color-vision validator against the app's cream 
 
 ## Limitations of this version
 
-- Projects are stored in the browser (IndexedDB). They do not sync between devices, and clearing site data removes them.
+- Projects are stored in the browser (IndexedDB). They do not sync between devices or follow the account, and clearing site data removes them.
+- There is no per-user limit on AI drafting.
 - Monthly data only. Quarterly and annual periods are rejected with an explanation.
 - No FX conversion. Data in another currency is flagged as unverified.
 - The forecast is a simple driver model: revenue growth, gross margin, opex growth, and other cash flow per month.

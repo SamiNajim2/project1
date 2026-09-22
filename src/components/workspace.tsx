@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { analysisFingerprint, runAnalysis, type Analysis } from "@/lib/analysis";
 import { useProject, type SaveState } from "@/lib/client/db";
@@ -8,6 +7,7 @@ import type { NormalizeResult } from "@/lib/normalize";
 import { periodLabel } from "@/lib/periods";
 import { fingerprint, prepareInput, STEPS, type Project, type StepId } from "@/lib/project";
 import type { AnalysisInput } from "@/lib/model";
+import { AccountMenu } from "./account-menu";
 import { FigureProvider } from "./figure";
 import { ForecastStep } from "./steps/forecast";
 import { ImportStep } from "./steps/import";
@@ -91,7 +91,7 @@ export function Workspace({ id }: { id: string }) {
   if (project === null) {
     return (
       <main className="mx-auto max-w-lg px-4 pt-24">
-        <EmptyState title="Project not found" action={<ButtonLink href="/">Back to projects</ButtonLink>}>
+        <EmptyState title="Project not found" action={<ButtonLink href="/projects">Back to projects</ButtonLink>}>
           Projects are saved in the browser where they were created.
         </EmptyState>
       </main>
@@ -122,10 +122,10 @@ export function Workspace({ id }: { id: string }) {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <SaveIndicator state={saveState} />
-              <Link href="/" className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-cream-200">
-                All projects
-              </Link>
+              <span className="hidden md:inline">
+                <SaveIndicator state={saveState} />
+              </span>
+              <AccountMenu />
             </div>
           </div>
         </header>
