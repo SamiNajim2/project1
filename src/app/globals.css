@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream-50: #fffdf8;
+  --color-cream-100: #fbf6ec;
+  --color-cream-200: #f4ecdc;
+  --color-cream-300: #e9dcc5;
+  --color-cream-400: #d9c7a8;
+
+  --color-ink: #2a2019;
+  --color-ink-soft: #4a3d31;
+  --color-muted: #7a6a58;
+
+  --color-orange-50: #fff4ea;
+  --color-orange-100: #ffe5cf;
+  --color-orange-200: #fdc9a0;
+  --color-orange-500: #ea6a1c;
+  --color-orange-600: #d45a0f;
+  --color-orange-700: #b0470a;
+
+  /* Figure kinds: actuals, forecasts and assumptions are always visually distinct. */
+  --color-forecast: #1d5fae;
+  --color-forecast-bg: #e8f0fb;
+  --color-assumption: #5b3fa0;
+  --color-assumption-bg: #efe9fa;
+
+  --color-good: #2f6b2a;
+  --color-good-bg: #e6efe3;
+  --color-bad: #a8321f;
+  --color-bad-bg: #fbe0dc;
+  --color-warn: #7a5a06;
+  --color-warn-bg: #fbefc9;
+
+  /* Charts (validated palettes; see README). */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-up: #2a78d6;
+  --color-down: #e34948;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --shadow-card: 0 1px 2px rgb(42 32 25 / 0.04), 0 4px 16px -6px rgb(42 32 25 / 0.08);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  background: var(--color-cream-100);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-orange-100);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-orange-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-cream-200) 0%, var(--color-cream-100) 50%, var(--color-cream-200) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
