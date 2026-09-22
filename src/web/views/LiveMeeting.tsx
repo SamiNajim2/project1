@@ -110,6 +110,15 @@ export default function LiveMeeting({ meetingId, meeting, onOpenReport }: {
                 End demo + write follow-up
               </Button>
             )}
+            <Button
+              variant="ghost"
+              onClick={async () => {
+                const { url } = await api.mediaUrl(meetingId!);
+                window.open(url, "_blank", "noopener,width=1280,height=720");
+              }}
+            >
+              Preview bot video
+            </Button>
             <Button variant="ghost" onClick={() => onOpenReport(meetingId!)}>Report</Button>
           </>
         }
@@ -215,7 +224,13 @@ export default function LiveMeeting({ meetingId, meeting, onOpenReport }: {
 
           <Card title="Meeting chat" subtitle="What Zeno saw and what it posted back">
             <div className="max-h-[260px] space-y-2 overflow-y-auto pr-2">
-              {(detail?.chat.length ?? 0) === 0 && <Empty>No chat messages yet.</Empty>}
+              {(detail?.chat.length ?? 0) === 0 && (
+                <Empty>
+                  {meeting.modes.text && meeting.status === "active" && !meeting.demo
+                    ? "No chat events have arrived yet. If this stays empty, the Teams meeting chat is probably not open to anonymous participants, or this is a channel meeting — Zeno cannot read or post chat in either case."
+                    : "No chat messages yet."}
+                </Empty>
+              )}
               {detail?.chat.map((message) => (
                 <div
                   key={message.id}
@@ -236,9 +251,9 @@ export default function LiveMeeting({ meetingId, meeting, onOpenReport }: {
         {(detail?.audit.length ?? 0) === 0 ? (
           <Empty>Nothing has been proposed or changed in this meeting.</Empty>
         ) : (
-          <ul className="space-y-2">
+          <ul className="min-w-0 space-y-2">
             {[...(detail?.audit ?? [])].reverse().map((event) => (
-              <li key={event.id} className="rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-sm">
+              <li key={event.id} className="min-w-0 rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-medium text-white">
                     {event.action}{event.issueKey ? ` · ${event.issueKey}` : ""}

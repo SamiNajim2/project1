@@ -109,12 +109,12 @@ export default function ControlRoom({ meetings, config, onRefresh, onOpen }: {
           {meetings.length === 0 ? (
             <Empty>No meetings yet. Send Zeno to a Teams call, or run the demo meeting.</Empty>
           ) : (
-            <ul className="grid gap-2">
+            <ul className="grid min-w-0 gap-2">
               {meetings.map((meeting) => (
-                <li key={meeting.id}>
+                <li key={meeting.id} className="min-w-0">
                   <button
                     onClick={() => onOpen(meeting.id)}
-                    className="flex w-full flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-left transition hover:border-white/20"
+                    className="flex w-full min-w-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-white/8 bg-white/3 px-4 py-3 text-left transition hover:border-white/20"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-medium">{meeting.title}</span>
@@ -169,7 +169,7 @@ export default function ControlRoom({ meetings, config, onRefresh, onOpen }: {
               ))}
             </dl>
             <p className="mt-4 text-xs text-mist-400">
-              Status webhooks are delivered to <code className="rounded bg-white/8 px-1 py-0.5">{config.appBaseUrl}/api/webhooks/recall/status</code>, configured in the Recall dashboard. Transcript and chat events go to <code className="rounded bg-white/8 px-1 py-0.5">/api/webhooks/recall/realtime</code>, configured per bot.
+              Status webhooks are delivered to <code className="rounded bg-white/8 px-1 py-0.5 break-all">{config.appBaseUrl}/api/webhooks/recall/status</code>, configured in the Recall dashboard. Transcript and chat events go to <code className="rounded bg-white/8 px-1 py-0.5 break-all">/api/webhooks/recall/realtime</code>, configured per bot.
             </p>
           </Card>
         )}

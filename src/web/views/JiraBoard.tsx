@@ -115,7 +115,7 @@ export default function JiraBoard() {
         ) : (
           <ul className="space-y-2">
             {audit.map((event) => (
-              <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-sm">
+              <li key={event.id} className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl border border-white/6 bg-white/3 px-4 py-3 text-sm">
                 <span className="min-w-0">
                   <span className="font-medium text-white">{event.action}</span>
                   {event.issueKey && <span className="ml-2 text-accent-400">{event.issueKey}</span>}

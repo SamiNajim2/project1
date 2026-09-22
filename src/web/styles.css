@@ -22,6 +22,9 @@ body {
   font-family: ui-sans-serif, -apple-system, "Segoe UI", Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+/* Long URLs and issue keys must never widen the page on a phone. */
+code { overflow-wrap: anywhere; }
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #1d2740; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

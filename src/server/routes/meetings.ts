@@ -59,6 +59,16 @@ export function meetingRoutes(ctx: AppContext): Router {
     res.json({ meeting, utterances, chat, commands, approvals, audit, report });
   });
 
+  /** The Output Media page URL, so the operator can watch what the meeting sees. */
+  router.get("/:id/media-url", async (req, res) => {
+    const meeting = await ctx.store.getMeeting(req.params.id!);
+    if (!meeting) {
+      res.status(404).json({ error: "meeting not found" });
+      return;
+    }
+    res.json({ url: ctx.orchestrator.mediaUrl(meeting), streaming: meeting.outputMediaActive });
+  });
+
   router.patch("/:id/modes", async (req, res) => {
     const parsed = modesSchema.safeParse(req.body);
     if (!parsed.success) {

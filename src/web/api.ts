@@ -51,6 +51,7 @@ export const api = {
       `/api/meetings/${id}/approvals/${approvalId}/${decision}`,
       { method: "POST" },
     ),
+  mediaUrl: (id: string) => request<{ url: string; streaming: boolean }>(`/api/meetings/${id}/media-url`),
   leave: (id: string) => request<{ meeting: Meeting }>(`/api/meetings/${id}/leave`, { method: "POST" }),
   buildReport: (id: string) => request<{ report: MeetingReport | null }>(`/api/meetings/${id}/report`, { method: "POST" }),
   jira: () => request<{ workspace: JiraWorkspace; provider: string }>("/api/jira"),
